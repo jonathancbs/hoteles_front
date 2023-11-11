@@ -25,9 +25,9 @@
         <div id="loginReserva">
             <form id="reservaForm">
                 <label for="nombre">Email:</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="txtemail" name="txtemail" required>
                 <label for="email">Contraseña:</label>
-                <input type="password" id="email" name="email" required>
+                <input type="password" id="txtpassword" name="txtpassword" required>
                 <button type="submit" id="btnreserva">
                     <i class="fa fa-spinner fa-spin hidden-button"></i>Loading
                 </button>
@@ -79,36 +79,56 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="index.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function () {//cuando termina de cargar la pagina
             $("#reservaForm").submit(function (event) {
-
-                $("#listadoReserva").removeClass("hidden");
-                $("#loginReserva").addClass("hidden");
-
-                $("#tblreservas > tbody > tr").remove();
                 event.preventDefault();
+                let email = $("#txtemail").val();//jquery
+                let clave = document.getElementById("txtpassword").value;
+                console.log(JSON.stringify(document.getElementById("txtpassword")))
                 $.ajax({
-                    method: "GET",
-                    url: "https://hoteloasis.onrender.com/api/reservas",
-                    dataType: "json"
+                    method: "POST",
+                    url: "https://hoteloasis.onrender.com/api/users/login",
+                    dataType: "json",
+                    data: JSON.stringify({
+                        password: clave,
+                        email: email
+                    }),
+                    contentType: "application/json; charset=utf-8"
                 }).done(function (msg) {
-                    console.log(JSON.stringify(msg));
-                    let htmlTabla = "";
-                    msg.data.forEach(function (data, index) {
-                        htmlTabla += "<tr>";
-                        htmlTabla += "<td>" + (formatDate(data.llegada) ?? "") + "</td>";
-                        htmlTabla += "<td>" + (formatDate(data.salida) ?? "") + "</td>";
-                        htmlTabla += "<td>" + (data.cliente ?? "") + "</td>";
-                        htmlTabla += "<td>" + (data.numeropersonas ?? "") + "</td>";
-                        htmlTabla += "<td>" + (data.numerohabitaciones ?? "") + "</td>";
-                        htmlTabla += "<td>" + (data.desayuno ?? "") + "</td>";
-                        htmlTabla += "<td>" + (data.wifi == "X" ? "SI" : "NO") + "</td>";
-                        htmlTabla += "<td>" + (data.spa == "X" ? "SI" : "NO") + "</td>";
-                        htmlTabla += "<td>" + (data.email == "X" ? "SI" : "NO") + "</td>";
-                        htmlTabla += "<td>" + (formatDate(data.createdAt) ?? "") + "</td>";
-                        htmlTabla += "</tr>";
-                    });
-                    $("#tblreservas > tbody").append(htmlTabla);
+
+                    $("#listadoReserva").removeClass("hidden");
+                    $("#loginReserva").addClass("hidden");
+
+                    $("#tblreservas > tbody > tr").remove();
+
+                    $.ajax({
+                        method: "GET",
+                        url: "https://hoteloasis.onrender.com/api/reservas",
+                        dataType: "json"
+                    }).done(function (msg) {
+
+                        console.log(JSON.stringify(msg));
+                        let htmlTabla = "";
+                        msg.data.forEach(function (data, index) {
+                            htmlTabla += "<tr>";
+                            htmlTabla += "<td>" + (formatDate(data.llegada) ?? "") + "</td>";
+                            htmlTabla += "<td>" + (formatDate(data.salida) ?? "") + "</td>";
+                            htmlTabla += "<td>" + (data.cliente ?? "") + "</td>";
+                            htmlTabla += "<td>" + (data.numeropersonas ?? "") + "</td>";
+                            htmlTabla += "<td>" + (data.numerohabitaciones ?? "") + "</td>";
+                            htmlTabla += "<td>" + (data.desayuno ?? "") + "</td>";
+                            htmlTabla += "<td>" + (data.wifi == "X" ? "SI" : "NO") + "</td>";
+                            htmlTabla += "<td>" + (data.spa == "X" ? "SI" : "NO") + "</td>";
+                            htmlTabla += "<td>" + (data.email == "X" ? "SI" : "NO") + "</td>";
+                            htmlTabla += "<td>" + (formatDate(data.createdAt) ?? "") + "</td>";
+                            htmlTabla += "</tr>";
+                        });
+                        $("#tblreservas > tbody").append(htmlTabla);
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        alert("error ${textStatus}");
+                    }).always(function () {
+                        // alert("finished");
+                    })
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                     alert("error ${textStatus}");
                 }).always(function () {
@@ -116,7 +136,10 @@
                     $("#btnreserva i").addClass('hidden-button');
                 });
             });
+
+
         });
+
 
         function formatDate(date) {
             if (date == undefined) {
